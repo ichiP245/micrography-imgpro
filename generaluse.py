@@ -1,6 +1,7 @@
 from os import listdir
 from cv2 import imread, cvtColor, COLOR_BGR2RGB
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 def getImgNamesAndPaths(imgs_folder_name):
 
@@ -35,11 +36,15 @@ def plotFigures(list_names, list_figs):
     fig = plt.figure(figsize=(21, int(5*nrows)))
 
     for i in range(len(list_names)):
+
         ax = fig.add_subplot(nrows, ncols, i + 1)
         ax.imshow(list_figs[i])
         ax.set_title(list_names[i])
-        #ax.axis('off')
-        ax.grid()
+
+        ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
+        ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+
+        ax.grid(which='both',linestyle='--')
 
     plt.show()
 
@@ -53,6 +58,9 @@ def plotHist(list_names, list_figs):
         ax = fig.add_subplot(nrows, ncols, i + 1)
         ax.plot(list_figs[i])
         ax.set_title(list_names[i])
-        ax.grid()
+
+        ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
+
+        ax.grid(which='both',axis='x')
 
     plt.show()
