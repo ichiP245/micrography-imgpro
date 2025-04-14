@@ -103,7 +103,7 @@ def getMaterialProportions(list_segmentations,label=True):
 def getImgAnalysis(base_img,gl_boundaries,list_bubbles_coordinates):
     
     # Capa verde
-    base_img = base_img[:,:,1]
+    #base_img = base_img[:,:,1]
 
     # Fronteras de niveles de grises
     first_bound = gl_boundaries[0]
