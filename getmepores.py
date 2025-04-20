@@ -4,7 +4,9 @@ import numpy as np
 
 from common import getContours, getFirstElementOfContour, applyFlooding, applyWatershed
 
-def getMetPores(base_img):
+def getMetPores(base_img,
+                first_kernel_size=(5,5),
+                second_kernel_size=(3,3)):
     
     # Aplicar umbralización multiotsu para segmentar la imagen
     list_ts_base_img = ski.filters.threshold_multiotsu(base_img, classes=5)
@@ -17,10 +19,10 @@ def getMetPores(base_img):
     test_1 = np.uint8(test_1)
 
     # Mejora de la máscara de las burbujas
-    test_2 = cv2.morphologyEx(test_1, cv2.MORPH_OPEN, np.ones((5,5),np.uint8),iterations=1)
+    test_2 = cv2.morphologyEx(test_1, cv2.MORPH_OPEN, np.ones(first_kernel_size,np.uint8),iterations=1)
 
     # Aplicar una operación de apertura más para eliminar el ruido
-    test_3 = cv2.morphologyEx(test_2, cv2.MORPH_OPEN, np.ones((3,3),np.uint8),iterations=1)
+    test_3 = cv2.morphologyEx(test_2, cv2.MORPH_OPEN, np.ones(second_kernel_size,np.uint8),iterations=1)
 
     # Obtener contornos de la imagen binaria
     contours_bubbles, contours_img = getContours(test_3)
