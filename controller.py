@@ -15,10 +15,10 @@ def run_analysis(fibers=False, flashes=False, pores=False,
                     'first_kernel_size': (5,5),
                     'second_kernel_size': (3,3),
                     'contours_mult': 2.5,
-                    'bh_ks': (7,7),
-                    'bhm_iter': 4,
-                    'bhm_mult': 60,
+                    'gamma': 1.0,
+                    'gain': 1.0,
                     'cont_mult': 2.5,
+                    'cont_mult_range': (0.0, None),
                     'ws_ths_factor': 0.025,
                     'ws_gl_vecinity': 15,
                     'otsu_classes': 5,
@@ -46,7 +46,16 @@ def run_analysis(fibers=False, flashes=False, pores=False,
                     continue
                 print(f"            |{filename}")
 
-                binary_mask, contours_filtered_img, list_masks = gmf.getMeFibers(base_img,bh_ks=parameters['bh_ks'],bhm_iter=parameters['bhm_iter'],bhm_mult=parameters['bhm_mult'],cont_mult=parameters['cont_mult'],ws_ths_factor=parameters['ws_ths_factor'],ws_gl_vecinity=parameters['ws_gl_vecinity'])
+                binary_mask, contours_filtered_img, list_masks = gmf.getMeFibersGammaOtsuWatershed(
+                    base_img,
+                    gamma=parameters.get('gamma', 1.0),
+                    gain=parameters.get('gain', 1.0),
+                    cont_mult_range=parameters.get('cont_mult_range', (0.0, None)),
+                    ws_ths_factor=parameters['ws_ths_factor'],
+                    ws_gl_vecinity=parameters['ws_gl_vecinity'],
+                    otsu_classes=parameters['otsu_classes'],
+                    otsu_range=parameters['otsu_range'],
+                )
 
                 cv2.imwrite(os.path.join(output_folder, f"{name_only}_fib.png"), binary_mask)
                 print("Done.")
