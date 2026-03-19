@@ -108,12 +108,14 @@ def as_odd(n: int) -> int:
 def get_default_params() -> Dict[str, Any]:
     return {
         "otsu_classes": 5,
-        "otsu_range": (0, 4),
+        "otsu_range": (3, 4),
         "first_kernel_size": (5, 5),
         "second_kernel_size": (3, 3),
         "gamma": 1.0,
         "gain": 1.0,
         "cont_mult": 2.5,
+        "ws_ths_factor": 0.025,
+        "ws_gl_vecinity": 15,
     }
 
 def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
@@ -126,6 +128,8 @@ def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
         curr_range = p.get("otsu_range", (0, 4))
         safe_range = (min(curr_range[0], o_classes - 1), min(curr_range[1], o_classes - 1))
         o_range = st.slider("Class Range", 0, o_classes - 1, safe_range, key=f"ots_r_{key_suffix}")
+        ws_ths_factor = st.slider("ws_ths_factor", 0.0001, 0.2, float(p.get("ws_ths_factor", 0.025)), 0.0005, format="%.4f", key=f"wsf_{key_suffix}")
+        ws_gl_vecinity = st.slider("ws_gl_vecinity", 1, 200, p.get("ws_gl_vecinity", 15), 1, key=f"wsv_{key_suffix}")
 
     return {
         "otsu_classes": int(o_classes),
@@ -135,6 +139,8 @@ def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
         "gamma": gamma,
         "gain": gain,
         "cont_mult": p.get("cont_mult", 2.5),
+        "ws_ths_factor": ws_ths_factor,
+        "ws_gl_vecinity": ws_gl_vecinity,
     }
 
 def run_pipeline(base_img_gray: np.ndarray, parameters: Dict[str, Any]):
@@ -150,6 +156,8 @@ def run_pipeline(base_img_gray: np.ndarray, parameters: Dict[str, Any]):
             base_img_gray,
             gamma=parameters.get("gamma", 1.0),
             gain=parameters.get("gain", 1.0),
+            ws_ths_factor=parameters.get("ws_ths_factor", 0.025),
+            ws_gl_vecinity=parameters.get("ws_gl_vecinity", 15),
             otsu_classes=parameters["otsu_classes"],
             otsu_range=parameters["otsu_range"],
             return_steps=True,

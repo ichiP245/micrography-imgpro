@@ -11,8 +11,10 @@ def getMeResults(base_img, parameters = {
     'gamma': 1.0,
     'gain': 1.0,
     'cont_mult': 2.5,
+    'ws_ths_factor': 0.025,
+    'ws_gl_vecinity': 15,
     'otsu_classes': 5,
-    'otsu_range': (2, None)
+    'otsu_range': (3, 4)
 }):
     
     pores_mask, undefined_mask = gmp.getMetPores(base_img,
@@ -25,6 +27,8 @@ def getMeResults(base_img, parameters = {
         base_img,
         gamma=parameters.get('gamma', 1.0),
         gain=parameters.get('gain', 1.0),
+        ws_ths_factor=parameters.get('ws_ths_factor', 0.025),
+        ws_gl_vecinity=parameters.get('ws_gl_vecinity', 15),
         otsu_classes=parameters['otsu_classes'],
         otsu_range=parameters['otsu_range']
     )

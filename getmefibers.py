@@ -93,6 +93,8 @@ def getMeFibers(base_img,
 def getMeFibersGammaOtsuWatershed(base_img,
                                  gamma=1.0,
                                  gain=1.0,
+                                 ws_ths_factor=0.025,
+                                 ws_gl_vecinity=15,
                                  otsu_classes=5,
                                  otsu_range=(2, None),
                                  return_steps=False):
@@ -117,8 +119,17 @@ def getMeFibersGammaOtsuWatershed(base_img,
 
     contours, _ = getContours(thresh_1)
     coordinates = getFirstElementOfContour(contours)
-    mask_flood, list_masks = applyFlooding(thresh_1, coordinates)
-    _, contours_img = getContours(mask_flood)
+    mask_flood, _ = applyFlooding(thresh_1, coordinates)
+
+    _, watershed_mask = applyWatershed(
+        test_1,
+        mask_flood,
+        threshold_factor=ws_ths_factor,
+        gl_vecinity=ws_gl_vecinity,
+    )
+
+    _, contours_img = getContours(watershed_mask)
+    list_masks = []
 
     if return_steps:
         steps = [
@@ -127,7 +138,8 @@ def getMeFibersGammaOtsuWatershed(base_img,
             ("3. Multi-Otsu Regions", np.uint8(regions * (255 / max(1, otsu_classes - 1)))),
             ("4. Selected Otsu Mask", thresh_1),
             ("5. Flood Mask", mask_flood),
+            ("6. Watershed Result", watershed_mask),
         ]
-        return mask_flood, contours_img, list_masks, steps
+        return watershed_mask, contours_img, list_masks, steps
 
-    return mask_flood, contours_img, list_masks
+    return watershed_mask, contours_img, list_masks
