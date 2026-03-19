@@ -114,36 +114,18 @@ def get_default_params() -> Dict[str, Any]:
         "gamma": 1.0,
         "gain": 1.0,
         "cont_mult": 2.5,
-        "cont_mult_range": (0.0, 3.0),
-        "ws_ths_factor": 0.025,
-        "ws_gl_vecinity": 15,
     }
 
 def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
     st.subheader("Parameters")
 
-    o_classes = st.slider("Multi-Otsu Classes", 2, 10, p.get("otsu_classes", 5), key=f"ots_c_{key_suffix}")
-
-    curr_range = p.get("otsu_range", (0, 4))
-    safe_range = (min(curr_range[0], o_classes - 1), min(curr_range[1], o_classes - 1))
-
-    o_range = st.slider("Class Range", 0, o_classes - 1, safe_range, key=f"ots_r_{key_suffix}")
-
     with st.expander("Advanced Settings", expanded=False):
         gamma = st.slider("gamma (fibers)", 0.1, 5.0, float(p.get("gamma", 1.0)), 0.1, key=f"gam_{key_suffix}")
         gain = st.slider("gamma gain (fibers)", 0.1, 5.0, float(p.get("gain", 1.0)), 0.1, key=f"gain_{key_suffix}")
-        curr_cont_range = p.get("cont_mult_range", (0.0, 3.0))
-        safe_cont_range = (float(curr_cont_range[0]), float(curr_cont_range[1] if curr_cont_range[1] is not None else 10.0))
-        cont_mult_range = st.slider(
-            "cont_mult range (fibers)",
-            -5.0,
-            10.0,
-            safe_cont_range,
-            0.1,
-            key=f"cmr_{key_suffix}"
-        )
-        ws_ths_factor = st.slider("ws_ths_factor", 0.0001, 0.2, float(p.get("ws_ths_factor", 0.025)), 0.0005, format="%.4f", key=f"wsf_{key_suffix}")
-        ws_gl_vecinity = st.slider("ws_gl_vecinity", 1, 200, p.get("ws_gl_vecinity", 15), 1, key=f"wsv_{key_suffix}")
+        o_classes = st.slider("Multi-Otsu Classes", 2, 10, p.get("otsu_classes", 5), key=f"ots_c_{key_suffix}")
+        curr_range = p.get("otsu_range", (0, 4))
+        safe_range = (min(curr_range[0], o_classes - 1), min(curr_range[1], o_classes - 1))
+        o_range = st.slider("Class Range", 0, o_classes - 1, safe_range, key=f"ots_r_{key_suffix}")
 
     return {
         "otsu_classes": int(o_classes),
@@ -153,9 +135,6 @@ def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
         "gamma": gamma,
         "gain": gain,
         "cont_mult": p.get("cont_mult", 2.5),
-        "cont_mult_range": cont_mult_range,
-        "ws_ths_factor": ws_ths_factor,
-        "ws_gl_vecinity": ws_gl_vecinity,
     }
 
 def run_pipeline(base_img_gray: np.ndarray, parameters: Dict[str, Any]):
@@ -166,6 +145,16 @@ def run_pipeline(base_img_gray: np.ndarray, parameters: Dict[str, Any]):
         getSegmentationFigure(segmentation, stats, "out", ax=ax)
         outputs["results"] = fig_to_img(fig)
         outputs["stats"] = stats
+
+        _, _, _, fiber_steps = gmf.getMeFibersGammaOtsuWatershed(
+            base_img_gray,
+            gamma=parameters.get("gamma", 1.0),
+            gain=parameters.get("gain", 1.0),
+            otsu_classes=parameters["otsu_classes"],
+            otsu_range=parameters["otsu_range"],
+            return_steps=True,
+        )
+        outputs["fiber_steps"] = fiber_steps
     except Exception as e:
         st.error(f"Pipeline error: {e}")
     return outputs
@@ -316,11 +305,14 @@ if st.session_state.img_data and 'active_file' in locals():
     with col_r:
         st.subheader("Output Preview")
         if data["outputs"]:
-            for k, v in data["outputs"].items():
-                if isinstance(v, np.ndarray):
+            if isinstance(data["outputs"].get("results"), np.ndarray):
+                st.image(data["outputs"]["results"], caption="results", width="stretch")
+            if "fiber_steps" in data["outputs"]:
+                st.subheader("Fiber Filter Steps")
+                for step_name, step_img in data["outputs"]["fiber_steps"]:
                     st.image(
-                        normalize_mask_for_display(v) if "mask" in k or "binary" in k else v,
-                        caption=k,
+                        normalize_mask_for_display(step_img),
+                        caption=step_name,
                         width="stretch"
                     )
         else:

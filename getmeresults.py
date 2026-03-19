@@ -11,9 +11,6 @@ def getMeResults(base_img, parameters = {
     'gamma': 1.0,
     'gain': 1.0,
     'cont_mult': 2.5,
-    'cont_mult_range': (0.0, None),
-    'ws_ths_factor': 0.025,
-    'ws_gl_vecinity': 15,    
     'otsu_classes': 5,
     'otsu_range': (2, None)
 }):
@@ -28,9 +25,6 @@ def getMeResults(base_img, parameters = {
         base_img,
         gamma=parameters.get('gamma', 1.0),
         gain=parameters.get('gain', 1.0),
-        cont_mult_range=parameters.get('cont_mult_range', (0.0, None)),
-        ws_ths_factor=parameters['ws_ths_factor'],
-        ws_gl_vecinity=parameters['ws_gl_vecinity'],
         otsu_classes=parameters['otsu_classes'],
         otsu_range=parameters['otsu_range']
     )
