@@ -112,7 +112,6 @@ def get_default_params() -> Dict[str, Any]:
         "first_kernel_size": (5, 5),
         "second_kernel_size": (3, 3),
         "gamma": 1.0,
-        "gain": 1.0,
         "cont_mult": 2.5,
         "ws_ths_factor": 0.025,
         "ws_gl_vecinity": 15,
@@ -123,7 +122,6 @@ def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
 
     with st.expander("Advanced Settings", expanded=False):
         gamma = st.slider("gamma (fibers)", 0.1, 5.0, float(p.get("gamma", 1.0)), 0.1, key=f"gam_{key_suffix}")
-        gain = st.slider("gamma gain (fibers)", 0.1, 5.0, float(p.get("gain", 1.0)), 0.1, key=f"gain_{key_suffix}")
         o_classes = st.slider("Multi-Otsu Classes", 2, 10, p.get("otsu_classes", 5), key=f"ots_c_{key_suffix}")
         curr_range = p.get("otsu_range", (0, 4))
         safe_range = (min(curr_range[0], o_classes - 1), min(curr_range[1], o_classes - 1))
@@ -137,7 +135,6 @@ def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
         "first_kernel_size": p.get("first_kernel_size", (5, 5)),
         "second_kernel_size": p.get("second_kernel_size", (3, 3)),
         "gamma": gamma,
-        "gain": gain,
         "cont_mult": p.get("cont_mult", 2.5),
         "ws_ths_factor": ws_ths_factor,
         "ws_gl_vecinity": ws_gl_vecinity,
@@ -155,7 +152,6 @@ def run_pipeline(base_img_gray: np.ndarray, parameters: Dict[str, Any]):
         _, _, _, fiber_steps = gmf.getMeFibersGammaOtsuWatershed(
             base_img_gray,
             gamma=parameters.get("gamma", 1.0),
-            gain=parameters.get("gain", 1.0),
             ws_ths_factor=parameters.get("ws_ths_factor", 0.025),
             ws_gl_vecinity=parameters.get("ws_gl_vecinity", 15),
             otsu_classes=parameters["otsu_classes"],

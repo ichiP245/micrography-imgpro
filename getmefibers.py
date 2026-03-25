@@ -92,14 +92,13 @@ def getMeFibers(base_img,
 
 def getMeFibersGammaOtsuWatershed(base_img,
                                  gamma=1.0,
-                                 gain=1.0,
                                  ws_ths_factor=0.025,
                                  ws_gl_vecinity=15,
                                  otsu_classes=5,
                                  otsu_range=(2, None),
                                  return_steps=False):
     blurred_img = cv2.medianBlur(base_img, 7)
-    gamma_img = ski.exposure.adjust_gamma(blurred_img, gamma=gamma, gain=gain)
+    gamma_img = ski.exposure.adjust_gamma(blurred_img, gamma=gamma, gain=1.0)
     test_1 = np.clip(gamma_img, 0, 255).astype(np.uint8)
 
     list_ts_test_1 = ski.filters.threshold_multiotsu(test_1, classes=otsu_classes)

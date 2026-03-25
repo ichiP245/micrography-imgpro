@@ -9,7 +9,6 @@ def getMeResults(base_img, parameters = {
     'first_kernel_size': (5,5),
     'second_kernel_size': (3,3),
     'gamma': 1.0,
-    'gain': 1.0,
     'cont_mult': 2.5,
     'ws_ths_factor': 0.025,
     'ws_gl_vecinity': 15,
@@ -26,7 +25,6 @@ def getMeResults(base_img, parameters = {
     fibers_mask, _, _ = gmf.getMeFibersGammaOtsuWatershed(
         base_img,
         gamma=parameters.get('gamma', 1.0),
-        gain=parameters.get('gain', 1.0),
         ws_ths_factor=parameters.get('ws_ths_factor', 0.025),
         ws_gl_vecinity=parameters.get('ws_gl_vecinity', 15),
         otsu_classes=parameters['otsu_classes'],
