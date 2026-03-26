@@ -2,6 +2,7 @@ import cv2
 import skimage as ski
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import colors
 
 def getBlackHatMask(base_img, kernel_size=(5,5)):
     # Crear kernel para operación morfológica
@@ -159,6 +160,12 @@ def getSegmentationFigure(segmentation, percentages, filename, ax=None):
     ax.set_title(f"Segmentación - {filename}")
     plt.tight_layout()
     return fig  
+
+def getSegmentationColoring(segmentation):
+    norm = colors.Normalize(vmin=float(np.min(segmentation)), vmax=float(np.max(segmentation)))
+    rgba = plt.get_cmap()(norm(segmentation))
+    rgb = (rgba[:, :, :3] * 255).astype(np.uint8)
+    return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
 def getColoringFigure(coloring, filename, ax=None):
     if ax is None:

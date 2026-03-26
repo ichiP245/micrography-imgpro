@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Existing pipeline modules
-from getmeresults import getMeResults
+from getmeresults import getMeResultsSimple
 import getmepores as gmp
 import getmeflashes as gmfl
 import getmefibers as gmf
@@ -108,36 +108,24 @@ def as_odd(n: int) -> int:
 def get_default_params() -> Dict[str, Any]:
     return {
         "otsu_classes": 5,
-        "otsu_range": (0, 4),
+        "otsu_range": (3, 4),
         "first_kernel_size": (5, 5),
         "second_kernel_size": (3, 3),
-        "bh_ks": (7, 7),
-        "bhm_iter": 4,
-        "bhm_mult": 60,
+        "gamma": 1.0,
         "cont_mult": 2.5,
         "ws_ths_factor": 0.025,
         "ws_gl_vecinity": 15,
     }
 
 def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
-    with st.expander("Parameters", expanded=False):
-        st.caption("Black Hat / enhancement")
-        bh = st.slider("bh_ks (odd)", 1, 61, p.get("bh_ks", (7, 7))[0], 2, key=f"bh_{key_suffix}")
-        bhm_iter = st.slider("bhm_iter", 1, 20, p.get("bhm_iter", 4), 1, key=f"bmi_{key_suffix}")
-        bhm_mult = st.slider("bhm_mult", 1, 300, p.get("bhm_mult", 60), 1, key=f"bmm_{key_suffix}")
+    st.subheader("Parameters")
 
-        st.caption("Otsu selection")
+    with st.expander("Advanced Settings", expanded=False):
+        gamma = st.slider("gamma (fibers)", 0.1, 5.0, float(p.get("gamma", 1.0)), 0.1, key=f"gam_{key_suffix}")
         o_classes = st.slider("Multi-Otsu Classes", 2, 10, p.get("otsu_classes", 5), key=f"ots_c_{key_suffix}")
-
         curr_range = p.get("otsu_range", (0, 4))
         safe_range = (min(curr_range[0], o_classes - 1), min(curr_range[1], o_classes - 1))
-
         o_range = st.slider("Class Range", 0, o_classes - 1, safe_range, key=f"ots_r_{key_suffix}")
-
-        st.caption("Contour filtering")
-        cont_mult_fib = st.slider("cont_mult (fibers)", 0.1, 10.0, float(p.get("cont_mult", 2.5)), 0.1, key=f"cmf_{key_suffix}")
-
-        st.caption("Watershed")
         ws_ths_factor = st.slider("ws_ths_factor", 0.0001, 0.2, float(p.get("ws_ths_factor", 0.025)), 0.0005, format="%.4f", key=f"wsf_{key_suffix}")
         ws_gl_vecinity = st.slider("ws_gl_vecinity", 1, 200, p.get("ws_gl_vecinity", 15), 1, key=f"wsv_{key_suffix}")
 
@@ -146,26 +134,31 @@ def build_parameters_ui(p: Dict[str, Any], key_suffix: str) -> Dict[str, Any]:
         "otsu_range": o_range,
         "first_kernel_size": p.get("first_kernel_size", (5, 5)),
         "second_kernel_size": p.get("second_kernel_size", (3, 3)),
-        "bh_ks": (as_odd(bh), as_odd(bh)),
-        "bhm_iter": bhm_iter,
-        "bhm_mult": bhm_mult,
-        "cont_mult": cont_mult_fib,
+        "gamma": gamma,
+        "cont_mult": p.get("cont_mult", 2.5),
         "ws_ths_factor": ws_ths_factor,
         "ws_gl_vecinity": ws_gl_vecinity,
     }
 
-def run_pipeline(base_img_gray: np.ndarray, parameters: Dict[str, Any], include_debug: bool = False):
+def run_pipeline(base_img_gray: np.ndarray, parameters: Dict[str, Any]):
     outputs: Dict[str, Any] = {}
     try:
-        if include_debug:
-            stats, segmentation, coloring, debug_images = getMeResults(base_img_gray, parameters, return_debug=True)
-            outputs["debug_images"] = debug_images
-        else:
-            stats, segmentation, coloring = getMeResults(base_img_gray, parameters)
+        stats, segmentation, coloring = getMeResultsSimple(base_img_gray, parameters)
         fig, ax = plt.subplots(figsize=(10, 6))
         getSegmentationFigure(segmentation, stats, "out", ax=ax)
         outputs["results"] = fig_to_img(fig)
         outputs["stats"] = stats
+
+        _, _, _, fiber_steps = gmf.getMeFibersGammaOtsuWatershed(
+            base_img_gray,
+            gamma=parameters.get("gamma", 1.0),
+            ws_ths_factor=parameters.get("ws_ths_factor", 0.025),
+            ws_gl_vecinity=parameters.get("ws_gl_vecinity", 15),
+            otsu_classes=parameters["otsu_classes"],
+            otsu_range=parameters["otsu_range"],
+            return_steps=True,
+        )
+        outputs["fiber_steps"] = fiber_steps
     except Exception as e:
         st.error(f"Pipeline error: {e}")
     return outputs
@@ -257,7 +250,7 @@ with st.sidebar:
         col1, col2 = st.columns(2)
         with col1:
             if st.button("Preview"):
-                data["outputs"] = run_pipeline(data["preview_image"], data["params"], include_debug=True)
+                data["outputs"] = run_pipeline(data["preview_image"], data["params"])
         with col2:
             if st.button("Apply to All"):
                 for k in st.session_state.img_data:
@@ -312,34 +305,20 @@ if st.session_state.img_data and 'active_file' in locals():
     with col_l:
         st.subheader(f"Input: {active_file}")
         st.image(to_rgb_for_display(data["image"]), width="stretch")
-        show_debug = st.checkbox("Show debug images", value=False, key=f"show_debug_{active_file}")
 
     with col_r:
         st.subheader("Output Preview")
         if data["outputs"]:
-            for k, v in data["outputs"].items():
-                if isinstance(v, np.ndarray):
+            if isinstance(data["outputs"].get("results"), np.ndarray):
+                st.image(data["outputs"]["results"], caption="results", width="stretch")
+            if "fiber_steps" in data["outputs"]:
+                st.subheader("Fiber Filter Steps")
+                for step_name, step_img in data["outputs"]["fiber_steps"]:
                     st.image(
-                        normalize_mask_for_display(v) if "mask" in k or "binary" in k else v,
-                        caption=k,
+                        normalize_mask_for_display(step_img),
+                        caption=step_name,
                         width="stretch"
                     )
-
-            if show_debug:
-                debug_images = data["outputs"].get("debug_images", {})
-                if debug_images:
-                    st.subheader("Debug Images")
-                    _, debug_col, _ = st.columns([1, 2, 1])
-                    with debug_col:
-                        for k, v in debug_images.items():
-                            if isinstance(v, np.ndarray):
-                                st.image(
-                                    normalize_mask_for_display(v) if "mask" in k or "binary" in k else v,
-                                    caption=k,
-                                    width="stretch"
-                                )
-                else:
-                    st.info("No debug images available for this preview.")
         else:
             st.info("Adjust parameters and click 'Preview'.")
 else:

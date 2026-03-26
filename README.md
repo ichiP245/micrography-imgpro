@@ -4,7 +4,7 @@ Micrograph image processing app for segmenting fibers, pores, resin, and undefin
 
 ## What is included
 
-- `app.py`: Streamlit web UI for uploading images, tuning parameters, previewing results, and exporting a ZIP.
+- `Simple.py`: Streamlit web UI for uploading images, tuning parameters, previewing results, and exporting a ZIP.
 - `controller.py`: command-line batch runner.
 - `getmeresults.py`, `getmefibers.py`, `getmeflashes.py`, `getmepores.py`: image processing pipeline modules.
 
@@ -28,7 +28,7 @@ pip install -r requirements.txt
 Start the Streamlit UI with:
 
 ```powershell
-streamlit run app.py
+streamlit run Simple.py
 ```
 
 Then open the local URL shown in the terminal, usually:

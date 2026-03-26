@@ -107,4 +107,55 @@ def getMeFibers(base_img,
     return binary_mask, contours_filtered_img, list_masks
 
 
+def getMeFibersGammaOtsuWatershed(base_img,
+                                 gamma=1.0,
+                                 ws_ths_factor=0.025,
+                                 ws_gl_vecinity=15,
+                                 otsu_classes=5,
+                                 otsu_range=(2, None),
+                                 return_steps=False):
+    blurred_img = cv2.medianBlur(base_img, 7)
+    gamma_img = ski.exposure.adjust_gamma(blurred_img, gamma=gamma, gain=1.0)
+    test_1 = np.clip(gamma_img, 0, 255).astype(np.uint8)
 
+    list_ts_test_1 = ski.filters.threshold_multiotsu(test_1, classes=otsu_classes)
+    regions = np.digitize(test_1, bins=list_ts_test_1)
+
+    start, end = otsu_range
+    if end is None:
+        end = otsu_classes - 1
+    if start is None:
+        start = 0
+    if start > end:
+        start, end = end, start
+    start = int(np.clip(start, 0, otsu_classes - 1))
+    end = int(np.clip(end, 0, otsu_classes - 1))
+
+    thresh_1 = ((regions >= start) & (regions <= end)).astype(np.uint8) * 255
+
+    contours, _ = getContours(thresh_1)
+    coordinates = getFirstElementOfContour(contours)
+    mask_flood, _ = applyFlooding(thresh_1, coordinates)
+
+    _, watershed_mask = applyWatershed(
+        test_1,
+        mask_flood,
+        threshold_factor=ws_ths_factor,
+        gl_vecinity=ws_gl_vecinity,
+    )
+
+    _, contours_img = getContours(watershed_mask)
+    list_masks = []
+
+    if return_steps:
+        steps = [
+            ("1. Median Blur", blurred_img),
+            ("2. Gamma Contrast", test_1),
+            ("3. Multi-Otsu Regions", np.uint8(regions * (255 / max(1, otsu_classes - 1)))),
+            ("4. Selected Otsu Mask", thresh_1),
+            ("5. Flood Mask", mask_flood),
+            ("6. Watershed Result", watershed_mask),
+        ]
+        return watershed_mask, contours_img, list_masks, steps
+
+    return watershed_mask, contours_img, list_masks
