@@ -28,7 +28,7 @@ pip install -r requirements.txt
 Start the Streamlit UI with:
 
 ```powershell
-streamlit run Simple.py
+streamlit run app.py
 ```
 
 Then open the local URL shown in the terminal, usually:
