@@ -4,7 +4,7 @@ Micrograph image processing app for segmenting fibers, pores, resin, and undefin
 
 ## What is included
 
-- `app.py`: Streamlit web UI for uploading images, tuning parameters, previewing results, and exporting a ZIP.
+- `app.py`: Single Streamlit web UI with a sidebar mode switch for Simple and Pro workflows.
 - `controller.py`: command-line batch runner.
 - `getmeresults.py`, `getmefibers.py`, `getmeflashes.py`, `getmepores.py`: image processing pipeline modules.
 
@@ -61,7 +61,7 @@ Running without flags processes the full combined result pipeline and writes out
 
 ## Build a single executable
 
-This project includes [`run_app.py`](run_app.py) and [`micrography-imgpro.spec`](micrography-imgpro.spec) for packaging the Streamlit app with PyInstaller.
+This project includes [`run_app.py`](run_app.py) for packaging the Streamlit app with PyInstaller.
 
 Already compiled in:
 ```
