@@ -447,6 +447,26 @@ def render_mode(config: ModeConfig):
             return
 
     st.info("Please upload images in the sidebar.")
+    st.markdown(
+        """
+        The app has two workflows in the sidebar:
+
+        - `Simple`: a lighter workflow with fewer controls, centered on gamma correction,
+          Multi-Otsu selection, and watershed refinement.
+        - `Pro`: a more detailed workflow with extra preprocessing controls for black-hat
+          enhancement and contour filtering.
+
+        In both modes, the app lets you preview the result on a cropped region and then
+        batch-process the full images.
+
+        I suggest trying the Simple workflow first, and only moving to Pro if the analysis
+        turns out really bad. You can absolutely get the hang of Pro and learn it properly,
+        but it has a steeper learning curve.
+
+        [Documentation](https://docs.google.com/document/d/1poxKbw4yWZf-ew6A376iOljxoanXr6GMMZizSAl_muk/edit?usp=drive_link)
+        | [Tutorial Video](https://youtu.be/Gdlq5muXD2s)
+        """
+    )
 
 
 st.set_page_config(page_title="Micrography Image Processor", layout="wide")
