@@ -1,6 +1,26 @@
 # micrography-imgpro
+This is a powerful **Python application** engineered to calculate the precise structural proportions between **fiber, resin, and pores** in composite materials. 
 
-Micrograph image processing app for segmenting fibers, pores, resin, and undefined regions.
+By utilizing advanced deterministic image processing filters, the tool automates material analysis without the need for manual guesswork.
+
+| Micrography | Processed Image |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/6b79272a-55cc-48ea-8be9-601715b4262d" width="100%" alt="First Image"> | <img src="https://github.com/user-attachments/assets/e2b2d808-e3a7-4932-89cb-83b4ab9db153" width="100%" alt="Second Image"> |
+
+The app has two workflows in the sidebar:
+
+- `Simple`: a lighter workflow with fewer controls, centered on gamma correction, Multi-Otsu selection, and watershed refinement.
+- `Pro`: a more detailed workflow with extra preprocessing controls for black-hat enhancement and contour filtering.
+
+In both modes, the app lets you preview the result on a cropped region and then batch-process the full images.
+
+I suggest trying to use the simple version first and only if the analisis turns out really bad use the pro version, you can get the hang of it and learn it properly but it's a steep learning curve. 
+
+<img width="1867" height="872" alt="image" src="https://github.com/user-attachments/assets/475882e4-4a07-4ed9-ad48-4f8525ca55f2" />
+
+
+YouTube tutorial/showcase: https://youtu.be/Gdlq5muXD2s
+
 
 ## What is included
 
